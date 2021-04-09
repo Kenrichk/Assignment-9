@@ -18,16 +18,14 @@ namespace NYTimes
     public class Function
     {
         public static readonly HttpClient client = new HttpClient();
-
-        public async Task<ExpandoObject> FunctionHandler(string input, ILambdaContext context)
+        public async Task<ExpandoObject> FunctionHandler(APIGatewayProxyRequest input, ILambdaContext context)
         {
-            string search = input.ToString();
-            HttpResponseMessage res = await client.GetAsync("https://api.nytimes.com/svc/books/v3/lists/current/hardcover-fiction.json?api-key=z8vWtDc1q9BpwACFGvHQXKpffCnyOG8R");
-            res.EnsureSuccessStatusCode();
+            string search ="";
+            Dictionary<string, string> dict = (Dictionary<string, string>)input.QueryStringParameters;
+            dict.TryGetValue("search", out search);
+            HttpResponseMessage res = await client.GetAsync($"https://api.nytimes.com/svc/books/v3/lists/current/{search}.json?api-key=z8vWtDc1q9BpwACFGvHQXKpffCnyOG8R"); ;
             string resBody=await res.Content.ReadAsStringAsync();
             ExpandoObject books = JsonConvert.DeserializeObject<ExpandoObject>(resBody);
-           // Console.WriteLine(resBody);
-           // Console.WriteLine(books);
             return books;
         }
     }
